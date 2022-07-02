@@ -10,6 +10,8 @@ var unforcedError;
 var winner;
 
 var firstServer;
+var gameEnd = false;
+var gameWinner = "";
 
 var statFile = require("Storage").open("tennisstats.csv","a");
 
@@ -74,6 +76,19 @@ function drawHowScoredScreen() {
   draw(layout);
 }
 
+function drawEndScreen(winner) {
+  var text;
+  if (winner.id == "p1") {
+    text = "Congrats!";
+  } else {
+    text = "Hard luck!";
+  }
+  var layout = new Layout( {
+    type:"txt", font:"6x8:2", label:text, pad:"10"
+  });
+  draw(layout);
+}
+
 function howServed(value) {
   switch(value) {
     case 0:
@@ -97,7 +112,12 @@ function howServed(value) {
 function howScored(isWinner) {
   unforcedError = 1 - isWinner;
   winner = isWinner;
-  drawScoreScreen();
+  writeToCsv();
+  if (!gameEnd) {
+    drawScoreScreen();
+  } else {
+    endGame(gameWinner);
+  }
 }
 
 function maybeDrawBall(shouldDrawBall) {
@@ -114,9 +134,7 @@ function startGame(firstServerInput) {
 }
 
 function incScore(scorer, otherPlayer) {
-  drawServeScreen();
   var newScore;
-  var gameEnd = false;
   var otherPlayerScore = otherPlayer.label;
   switch(scorer.label) {
     case "0":
@@ -142,8 +160,7 @@ function incScore(scorer, otherPlayer) {
       gameEnd = true;
       break;
   }
-  // If the game is still going just update the score,
-  // else call a function to reset the game score and update the set score
+  // If the game is still going just update the score
   if (!gameEnd) {
     if (scorer.id == "p1") {
         p1Score = newScore; 
@@ -152,10 +169,10 @@ function incScore(scorer, otherPlayer) {
         p2Score = newScore;
         p1Score = otherPlayerScore;
     }
-    writeToCsv();
   } else {
-    endGame(scorer);
+    gameWinner = scorer.id;
   }
+  drawServeScreen();
 }
 
 function writeToCsv() {
@@ -163,24 +180,33 @@ function writeToCsv() {
     p1GamesWon.toString() + "-" + p2GamesWon.toString(),
     p1Score,
     p2Score,
-
+    firstServeIn,
+    doubleFault,
+    unforcedError,
+    winner
   ];
   // Write data here
   statFile.write(csv.join(",")+"\n");
 }
 
 function endGame(winner) {
-  if (winner.id == "p1") {
+  if (winner == "p1") {
     p1GamesWon += 1;
   } else {
     p2GamesWon += 1;
   }
+  firstServer = (firstServer + 1) % 2;
+  p1Score = "0";
+  p2Score = "0";
+  writeToCsv();
+
+  // reset things
+  gameEnd = false;
+  gameWinner = "";
+
   if (isSetWon()) {
-    Terminal.println("Set won!");
+    drawEndScreen(winner);
   } else {
-    firstServer = (firstServer + 1) % 2;
-    p1Score = "0";
-    p2Score = "0";
     drawScoreScreen();
   }
 }
