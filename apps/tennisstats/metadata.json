@@ -4,7 +4,8 @@
   "icon": "app.png",
   "version":"0.02",
   "description": "This is a description of my awesome tennis stats app",
-  "tags": "",
+  "tags": "outdoors",
+  "interface": "interface.html",
   "supports" : ["BANGLEJS2"], 
   "storage": [
     {"name":"tennisstats.app.js","url":"app.js"},

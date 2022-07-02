@@ -108,7 +108,7 @@ function writeToCsv() {
     p2Score,
   ];
   // Write data here
-  file.write(csv.join(",")+"\n");
+  statFile.write(csv.join(",")+"\n");
 }
 
 function endGame(winner) {
