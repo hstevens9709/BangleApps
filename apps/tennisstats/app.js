@@ -4,11 +4,20 @@ var p2GamesWon = 0;
 var p1Score = "0";
 var p2Score = "0";
 
+var firstServeIn;
+var doubleFault;
+var unforcedError;
+var winner;
+
 var firstServer;
 
 var statFile = require("Storage").open("tennisstats.csv","a");
 
 var Layout = require("Layout");
+
+// CSV format
+// Set score, P1 Game score, P2 Game score, 1st serve?, Double Fault?, Unforced Error?, Winner?
+var csv = [];
 
 function draw(layout) {
     layout.update();
@@ -44,6 +53,53 @@ function drawScoreScreen() {
   draw(layout);
 }
 
+function drawServeScreen() {
+  var layout = new Layout( {
+    type:"v", c: [
+      {type:"btn", font:"10%", label:"1st", cb:l=>howServed(0), pad:"10"},
+      {type:"btn", font:"10%", label:"2nd", cb:l=>howServed(1), pad:"10"},
+      {type:"btn", font:"10%", label:"Double Fault", cb:l=>howServed(2), pad:"10"},
+    ]
+  });
+  draw(layout);
+}
+
+function drawHowScoredScreen() {
+  var layout = new Layout( {
+    type:"v", c: [
+      {type:"btn", font:"10%", label:"Unforced error", cb:l=>howScored(0), pad:"10"},
+      {type:"btn", font:"10%", label:"Winner", cb:l=>howScored(1), pad:"10"}
+    ]
+  });
+  draw(layout);
+}
+
+function howServed(value) {
+  switch(value) {
+    case 0:
+      firstServeIn = 1;
+      doubleFault = 0;
+      drawHowScoredScreen();
+      break;
+    case 1:
+      firstServeIn = 0;
+      doubleFault = 0;
+      drawHowScoredScreen();
+      break;
+    case 2:
+      firstServeIn = 0;
+      doubleFault = 1;
+      howScored(0);
+      break;
+  }
+}
+
+function howScored(isWinner) {
+  unforcedError = 1 - isWinner;
+  winner = isWinner;
+  drawScoreScreen();
+}
+
 function maybeDrawBall(shouldDrawBall) {
   if (shouldDrawBall == 0) {
     return require("heatshrink").decompress(atob("mEwwhC/AFcCkAVTn////w//zCp8DCoIXDAAIzNgQWDC4n/Ih4QBn/wAwZKLh4OBmH/CgPwl41EC5IMCMAfzD4RJLBwPzMAoXFGBBBBmBZDAAIdFMI4NBIAxkCJBYUBRAhBDJBgUBH4oACbwn/+SNGIw5IOCg4pDVJQ7FAA0gGwrsGABPzEoh4EC5gqBBwYXSJIIxCC4kvC5oYBgEjL4gXPMYIZBC6jYIeAIXTh8yYRqPKQYYXTWoJkNC4grEgDcNOwghEbpiOFBQoXRLYgwLXwwRFSRR2EJA8wIx7vG+CqI+YXHJAnzMBBGHJAxgICxAwFkAuQMIvwLpxJHC40gC5kCC4SWECxpKDC4ZENGY4rQAH4Aa"));
@@ -58,6 +114,7 @@ function startGame(firstServerInput) {
 }
 
 function incScore(scorer, otherPlayer) {
+  drawServeScreen();
   var newScore;
   var gameEnd = false;
   var otherPlayerScore = otherPlayer.label;
@@ -96,7 +153,6 @@ function incScore(scorer, otherPlayer) {
         p1Score = otherPlayerScore;
     }
     writeToCsv();
-    drawScoreScreen();
   } else {
     endGame(scorer);
   }
@@ -104,8 +160,10 @@ function incScore(scorer, otherPlayer) {
 
 function writeToCsv() {
   var csv = [
+    p1GamesWon.toString() + "-" + p2GamesWon.toString(),
     p1Score,
     p2Score,
+
   ];
   // Write data here
   statFile.write(csv.join(",")+"\n");
