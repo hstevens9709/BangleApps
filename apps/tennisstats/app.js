@@ -215,4 +215,15 @@ function isSetWon() {
   return (p1GamesWon == 6 && p2GamesWon < 5) || (p2GamesWon == 6 && p1GamesWon < 5) || p1GamesWon == 7 || p2GamesWon == 7;
 }
 
+var csv = [
+  "Set Score",
+  "P1 Game Score",
+  "P2 Game Score",
+  "First Serve In?",
+  "Double Fault?",
+  "Unforced Error?",
+  "Winner?"
+];
+// Write data here
+statFile.write(csv.join(",")+"\n");
 drawStartScreen();
