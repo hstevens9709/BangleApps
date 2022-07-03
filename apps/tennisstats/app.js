@@ -13,7 +13,7 @@ var firstServer;
 var gameEnd = false;
 var gameWinner = "";
 
-var statFile = require("Storage").open("tennisstats.csv","a");
+var statFile = require("Storage").open("tennisstats.csv","w");
 
 var Layout = require("Layout");
 
@@ -78,7 +78,7 @@ function drawHowScoredScreen() {
 
 function drawEndScreen(winner) {
   var text;
-  if (winner.id == "p1") {
+  if (winner == "p1") {
     text = "Congrats!";
   } else {
     text = "Hard luck!";
